@@ -1,0 +1,307 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+	<meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+	<title>贪吃蛇</title>
+</head>
+<style>
+  body{
+    background-image: url(img/hh.jpg});
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+  }
+  .selector{
+    width: 200px;
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    text-align: center;
+    padding: 30px 20px;
+  }
+  .selector img{
+    padding-left: 0;
+  }
+  .selector span{
+    color: #666;
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 20px;
+  }
+	.sence{
+		width: 600px;
+		height: 600px;
+		position: absolute;
+		left: 0px;
+		right: 0;
+		top: 0;
+		bottom: 0;
+		margin: auto;
+    z-index: 10;
+    /*float: left;*/
+		border:1px solid #333;
+    background: url(img/bg.png);
+	}
+	.block{
+		width: 29px;
+		height: 29px;
+		/*background: pink;*/
+    margin: 0 1px 1px 0;
+		float: left;
+	}
+    .shiwu{
+    	/*background: orange;*/
+      background: url(img/aa.png);
+      background-size: 100%;
+    }
+    .she{
+    	background: #7fbe25;
+    }
+    .button{
+      width: 150px;
+      height: 48px;
+      margin-top: 10px;
+      margin-left: 20px;
+      /*background: #9afa34;*/
+      text-align: center;
+      line-height: 50px;
+      font-size: 25px;
+      font-weight: bold;
+      color: #32623A;
+      background-image: url(img/a1.png);
+      background-size: 100%;
+    }
+    .row{
+      margin-top: 20px;
+      margin-bimgottom: 20px;
+      color: #999;
+      outline: none;
+      border:none;
+    }
+    .active{
+      color: #FFF100;
+    }
+    .bgsnake{
+      position: absolute;
+      left: 480px;
+      top: 50px;
+    }
+    .small{
+      position: absolute;
+      left: 0;
+      top: 480px;
+      z-index: 20;
+    }
+    .button1{
+      width: 43px;
+      height: 43px;
+      float: left;
+      margin-top: 40px;
+      margin-right: 22px;
+    }
+    .start{
+      background-image: url(img/a2.png);
+      background-size: 108%;
+    }
+    .stop{
+      background-image: url(img/a3.png);
+      background-size: 108%;
+    }
+    .restart{
+      background-image: url(img/a4.png);
+      background-size: 108%;
+    }
+</style>
+<body>
+	<script src="./myjQuery/js/jquery-1.12.0.js"></script>
+  <img src="img/hh.jpg" alt="">
+  <div class="bgsnake"><img src="img/ee.png" alt=""></div>
+  <!-- <div class="small"><img src="img/ff.png" alt=""></div> -->
+  <div class="selector">   
+    <div class="senceChoose">
+      <img src="img/cc.png" alt="">
+      <div class="button" data-row="15">简单</div>
+      <div class="button active" data-row="20" >正常</div>
+      <div class="button" data-row="30">挑战</div>
+    </div>
+   <!--  <input type="text" class="row" placeholder="请输入场景大小15-40"> -->
+    <div class="concolChoose">
+      <div class="button1 start"></div>
+      <div class="button1 stop"></div>
+      <div class="button1 restart"></div>
+    </div>
+    
+  </div>
+  
+	<div class="sence">
+		 
+	</div>
+
+</body>
+<script>
+	// 场景绘画
+  var zb=function(x,y){
+    return x+'-'+y;
+  }
+  var snake=[];
+  var row=20;
+  var timerid;
+  var speed=200;
+  var shiwu;
+  var drawSence=function(hang){
+    row=hang||20;
+    var sence=$('.sence');
+     var i=0;
+     var j=0;
+     var wh; 
+    wh=Math.floor(600/row);   
+    sence.empty();   
+    for(;i<row;i++){
+      for(j=0;j<row;j++){
+            $('<div>')
+            .addClass('block')
+            .attr('id',zb(i,j))
+            .width(wh-1)
+            .height(wh-1)
+            .appendTo(sence);
+      }
+    }
+    sence.width(wh*row);
+    sence.height(wh*row);
+  }
+	   drawSence();
+
+$('.row').bind('keydown',function(e){
+   if(e.keyCode===13){ 
+    row=$(this).val();
+    if(!isNaN(row)&&row>=15&&row<=40){
+        drawSence(row);
+        drawSnake();
+        shiwu=fangshiwu();
+        $(this).val('');
+        $('.button.active').removeClass('active')
+        $('.button[data-row='+row+']').addClass('active');
+    }else{
+      alert('重新输入');
+      $(this).val('');
+      drawSence(20);
+      drawSnake();
+      shiwu=fangshiwu();
+    }   
+   }
+})
+  // 场景选择
+  $('.senceChoose .button').bind('click',function(){
+      row=Number($(this).attr('data-row'));
+      $('.button.active').removeClass('active');
+      $(this).addClass('active');
+      drawSence(row);
+      drawSnake();
+      shiwu=fangshiwu();
+  })
+	// 画蛇
+  var drawSnake=function(){
+     snake=[{x:0,y:0},{x:0,y:1},{x:0,y:2}];
+       snake.forEach(function(v){
+        $('#'+zb(v.x,v.y)).addClass('she');
+    })
+  }
+  drawSnake();
+	var dictsnake={'0-0':true,'0-1':true,'0-2':true};
+	// 开始游戏
+        var startgame=function(){
+          clearInterval(timerid);
+          timerid=setInterval(move,speed);
+        }
+
+
+	$('.start').bind('click',function(){
+       startgame();
+  })
+
+// 暂停游戏
+var stopgame=function(){
+  clearInterval(timerid);
+}
+$('.stop').bind('click',function(){
+       stopgame();
+  })
+
+// 重新开始
+var restart=function(){
+   // snake=[{x:0,y:0},{x:0,y:1},{x:0,y:2}];
+   $('.she').removeClass('she');
+   $('.shiwu').removeClass('shiwu');
+   // snake.forEach(function(v){
+   //  $('#'+zb(v.x,v.y)).addClass('she');
+   //  })  
+   drawSnake();
+   shiwu=fangshiwu();
+   startgame();
+
+}
+$('.restart').bind('click',function(){
+   clearInterval(timerid);
+   restart();
+})
+	// 画食物
+    var fangshiwu=function(){
+    	do{
+    		var _x=Math.floor(Math.random()*row);
+		    var _y=Math.floor(Math.random()*row);
+    	}while(dictsnake[_x+'-'+_y])
+    		
+		$('#'+zb(_x,_y)).addClass('shiwu');
+		 return{x:_x,y:_y};
+    }
+	shiwu=fangshiwu();
+	// 让蛇动
+	  var direction=39;
+      var move=function(){ 
+       var jiutou=snake[snake.length-1];  
+       if(direction===39){       	
+     	var xintou={x:jiutou.x,y:jiutou.y+1};
+       }else if(direction===40){
+         var xintou={x:jiutou.x+1,y:jiutou.y};
+       }else  if(direction===37){
+         var xintou={x:jiutou.x,y:jiutou.y-1};
+       }else if(direction===38){
+       	var xintou={x:jiutou.x-1,y:jiutou.y};
+       }
+       
+       if(xintou.x===shiwu.x&&xintou.y===shiwu.y){
+       	
+       	snake.push(xintou);
+       	dictsnake[xintou.x+'-'+xintou.y]=true;
+       	$('#'+xintou.x+'-'+xintou.y).addClass('she').removeClass('shiwu');
+       	shiwu=fangshiwu();
+       	}else if(xintou.x<0||xintou.y<0||xintou.x>row-1||xintou.y>row-1){         clearInterval(timerid);
+                   console.log('游戏结束')
+                   return;
+       	}
+       	 else if(dictsnake[xintou.x+'-'+xintou.y]){
+       	 	clearInterval(timerid);
+           console.log('游戏结束')
+       		return;
+       	}
+       	
+       	snake.push(xintou);
+     	 $('#'+xintou.x+'-'+xintou.y).addClass('she');
+     	 var weiba=snake.shift();
+     	  $('#'+weiba.x+'-'+weiba.y).removeClass('she');
+     	  delete dictsnake[weiba.x+'-'+weiba.y];
+     }
+     
+
+      $(document).bind('keydown',function(e){
+      	if(e.keyCode<37||e.keyCode>40){
+      		return;
+      	}else if(Math.abs(e.keyCode-direction)===2){
+            return;
+      	}
+         direction=e.keyCode;
+      })
+
+     
+</script>
+</html>
